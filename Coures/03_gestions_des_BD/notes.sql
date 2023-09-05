@@ -1,0 +1,6 @@
+SHOW DATABASES;
+CREATE DATABASE test ;
+CREATE DATABASE IF NOT EXISTS test ;
+USE test;
+SHOW varaiables like 'char%';
+DROP DATABASE test ;
