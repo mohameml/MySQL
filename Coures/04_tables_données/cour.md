@@ -99,7 +99,28 @@ Une table est composée des éléments suivants :
 
 
 
+#### RQ :
+on peut spécifier le moteur de stockage et l'encodage lors de la creéation d'une table
 
+Exemple :
+
+```sql
+
+CREATE TABLE IF NOT EXISTS `table_users`
+(
+    `id_user` SMALLINT(6),
+    `user_name` VARCHAR(30) ,
+    `user_mail` VARCHAR(100) ,
+    `user_registartion` DATE ,
+    `user_admin` BOOLEAN  ,
+)
+ENGINE = MyISAM 
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci
+;
+
+
+```
 
 
 
