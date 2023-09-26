@@ -67,13 +67,192 @@ Exemple : Trouver le département avec la moyenne de salaire la plus élevée.
 SELECT Département
 FROM Employés
 GROUP BY Département
-HAVING AVG(Salaire) = (SELECT MAX(Moyenne_Salaire) FROM (SELECT AVG(Salaire) AS Moyenne_Salaire FROM Employés) AS Moyennes);
+HAVING AVG(Salaire) = (SELECT MAX(Moyenne_Salaire) FROM (SELECT Département, AVG(Salaire) AS Moyenne_Salaire FROM Employés GROUP BY Département) AS Moyennes);
+
 ```
 
-## III. Bonnes Pratiques
 
-- Utilisez des sous-requêtes lorsque cela est nécessaire pour effectuer des opérations complexes ou pour filtrer les résultats en fonction de critères dynamiques.
-- Évitez d'utiliser des sous-requêtes de manière excessive, car elles peuvent rendre les requêtes moins lisibles et moins performantes.
-- Assurez-vous de comprendre la différence entre les sous-requêtes corrélées et non-corrélées, et choisissez le type approprié en fonction de votre cas d'utilisation.
 
-Les sous-requêtes sont un outil puissant en SQL qui vous permettent d'effectuer des opérations plus complexes et de répondre à une grande variété de questions en utilisant des requêtes imbriquées. Avec une compréhension solide des sous-requêtes, vous pouvez interroger efficacement et tirer des informations précieuses de vos bases de données.
+
+### III. Requetes imbriquées avancées :
+
+#### 1. opérateurs de quantification en SQL : `ALL` , `ANY` , ``SOME``
+
+
+Les opérateurs `ALL`, `ANY`, et `SOME` sont utilisés dans SQL pour effectuer des comparaisons entre une valeur et un ensemble de valeurs renvoyées par une sous-requête. Ces opérateurs sont couramment utilisés avec des opérations de comparaison telles que `=`, `>`, `<`, `>=`, `<=`, `!=`, etc.
+
+
+
+1. **ALL** : L'opérateur `ALL` est utilisé pour comparer une valeur à toutes les valeurs d'une sous-requête. La condition sera vraie si la comparaison est vraie pour toutes les valeurs de la sous-requête.
+
+   Exemple :
+   
+   ```sql
+   SELECT nom
+   FROM employes
+   WHERE salaire > ALL (SELECT salaire FROM employes WHERE departement = 'Ventes');
+   ```
+
+   Cette requête renverra le nom des employés dont le salaire est supérieur à celui de tous les employés du département "Ventes".
+
+2. **ANY** ou **SOME** : Les opérateurs `ANY` et `SOME` sont interchangeables et sont utilisés pour comparer une valeur à au moins une des valeurs de la sous-requête. La condition sera vraie si la comparaison est vraie pour au moins une des valeurs de la sous-requête.
+
+   Exemple avec `ANY` :
+   
+   ```sql
+   SELECT nom
+   FROM employes
+   WHERE salaire > ANY (SELECT salaire FROM employes WHERE departement = 'Ventes');
+   ```
+
+   Cette requête renverra le nom des employés dont le salaire est supérieur à celui d'au moins un employé du département "Ventes".
+
+   Exemple avec `SOME` :
+   
+   ```sql
+   SELECT nom
+   FROM employes
+   WHERE salaire > SOME (SELECT salaire FROM employes WHERE departement = 'Ventes');
+   ```
+
+   Cette requête est équivalente à la précédente et renverra le même résultat.
+
+#### 2. Les Motés cles `EXISTS` :
+
+**EXISTS** :
+
+   - **Utilisation** : L'opérateur `EXISTS` est utilisé pour vérifier si au moins une ligne est renvoyée par une sous-requête. Si la sous-requête renvoie au moins une ligne, la condition `EXISTS` est évaluée comme vraie ; sinon, elle est évaluée comme fausse.
+   
+   - **Exemple** : Supposons que vous ayez une table `commandes` et une table `clients`. Vous pouvez utiliser `EXISTS` pour vérifier si au moins une commande a été passée par un client spécifique :
+   
+     ```sql
+     SELECT nom, prenom
+     FROM clients c
+     WHERE EXISTS (
+         SELECT *
+         FROM commandes cmd
+         WHERE cmd.client_id = c.client_id
+     );
+    ```
+
+   - **Exemple 2 :**  Les noms et prénoms des étudiants n’ayant pas de note : deux tables `Eleves` et `NOTES`
+
+      ```sql
+         SELECT prenom, nom
+         FROM Eleves e
+         WHERE NOT EXISTS ( SELECT *
+         FROM Notes
+         WHERE prenom = e.prenom
+         AND nom = e.nom );     
+
+
+         -- ou :
+
+         SELECT prenom , nom
+         FROM Eleves 
+         WHERE (prenom , nom) NOT IN 
+         (
+         SELECT prenom , nom
+         FROM NOTES
+
+         ); 
+      
+      ```
+
+
+
+     
+#### 3. REQUETES imbriquées :
+
+l'expression génerale d'une réquette imbriqueé est :
+
+**........ WHERE expr θ (SELECT ..) AS Q ......**
+
+- **a.si Q retourne une valeur atomique :**
+
+   -  Alors $\theta \in \{= , <> , <= ,= > , < ,>\}$
+
+   - Exemple :
+      * Les noms et prénoms des étudiants ayant eu moins que Dark Vador en  bases de données:
+
+      ```sql
+      SELECT * FROM Notes
+      WHERE cours = 'Bases de Données' 
+      AND note <= ( SELECT DISTINCT note
+      FROM Notes
+      WHERE cours = 'Bases de Données' 
+      AND prenom = 'Dark' AND nom = 'Vador' );      
+       ```
+
+      Attention … SELECT FROM WHERE doit retourner une seule valeur.
+
+
+- **b.Q retourne un ensemble de valeurs atomiques:**
+
+   - Alors $\theta \in \{IN , NOT~IN , \phi~ALL , \phi~ANY \}~~~~~~~avec~~ \phi \in \{= ,<> , <= , >= , < , > \}$ 
+
+   - Exemples :
+      - Quel cours a la moyenne la plus basse ?
+
+      ```sql
+         SELECT cours, AVG(note)
+         FROM Notes
+         GROUP BY cours
+         HAVING AVG(note) <= ALL (
+         SELECT AVG(note)
+         FROM notes
+         GROUP BY cours
+         );      
+      
+      
+      ```
+
+      - solution 2 :
+
+      ```sql 
+      
+      SELECT cour FROM NOTES 
+      GROUP BY cour 
+      HAVING AVG(note) = (
+
+         SELECT MIN(moyenne_note) FROM (SELECT cour , AVG(note) AS moyenne_note FROM NOTES GROUP BY cour)
+      );
+      
+      
+      ```
+
+- **c.Q retourne un n-uplet :**
+
+   - Alors : 
+
+      * la réquette est de la forme : **........ WHERE (expr1, expr2, .....) θ (SELECT ..)  ......**
+
+      * $\theta \in \{= , <> \}$
+
+      * Exemple :
+
+         ```sql
+         -- il faut assurer que Q retourne un seule n-uplte 
+         SELECT * FROM NOTES WHERE (nom,note) = (SELECT .......) AS Q ;
+         
+         ```
+
+- **d. Q retourne un ensemble de n-uplets:**
+
+   - Alors : 
+
+      * la réquette est de la forme : **........ WHERE (expr1, expr2, .....) θ (SELECT ..)  ......**
+
+      * $\theta \in \{IN , NOT~IN , \phi~ANY ,\phi~ALL \}$ avec $\phi \in \{=  , <> \}$
+
+      * Exemple : Les noms et prénoms des étudiants n’ayant que des  notes supérieures ou égales à 10 
+
+         ```sql
+         SELECT prenom, nom 
+         FROM Eleves
+         WHERE (prenom, nom) NOT IN 
+         ( SELECT prenom, nom 
+         FROM Notes
+         WHERE note < 10 ) ;        
+         
+         ```
