@@ -256,7 +256,55 @@ END;
 
 ```
 
-- `isolation_level` est le niveau d'isolation que vous souhaitez définir. Il peut s'agir de l'un des niveaux d'isolation pris en charge par votre SGBD, tels que "READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE", "READ UNCOMMITTED"
+- `isolation_level` est le niveau d'isolation que vous souhaitez définir. Il peut s'agir de l'un des niveaux d'isolation pris en charge par votre SGBD, tels que :
+    - **READ UNCOMMITTED**
+    - **READ COMMITTED**
+    -  **REPEATABLE READ** 
+    - **SERIALIZABLE**
+
+
+## 6. `**point de sauvegarde ``savepoint``:**
+
+- un point de sauvegarde ``savepoint`` est une fonctionnalité qui permet de définir un point dans une transaction à partir duquel la transaction peut être partiellement annulée (``rollback``) sans affecter l'ensemble de la transaction. 
+
+
+- **utilisation d'un savepoint dans SQL :**
+
+1. **Définir un Savepoint :** 
+    
+    - Avant d'effectuer une série d'opérations au sein d'une transaction, vous pouvez définir un savepoint. 
+    
+    - Cela se fait avec la commande `SAVEPOINT` suivie d'un nom que vous attribuez au point de sauvegarde.
+
+    ```sql
+    SAVEPOINT nom_du_savepoint;
+    ```
+
+2. **Effectuer des Opérations :** 
+
+    - Vous effectuez ensuite vos opérations au sein de la transaction, qui peuvent inclure des mises à jour, des insertions, des suppressions, etc.
+
+    ```sql
+    UPDATE table SET colonne = 'nouvelle_valeur' WHERE condition;
+    ```
+
+3. **Rollback jusqu'au Savepoint :** 
+    
+    - Si une partie de la transaction doit être annulée, vous pouvez effectuer un rollback jusqu'au savepoint spécifié. 
+    
+    - Cela annulera toutes les opérations effectuées après la définition du savepoint.
+
+    ```sql
+    ROLLBACK TO nom_du_savepoint;
+    ```
+
+4. **Commit :** Si toutes les opérations dans la transaction sont satisfaisantes, vous pouvez effectuer un commit pour valider définitivement ces changements.
+
+    ```sql
+    COMMIT;
+    ```
+
+L'utilisation de savepoints est pratique dans les situations où vous souhaitez annuler uniquement une partie des changements effectués au sein d'une transaction sans annuler l'ensemble de la transaction. Cela peut être utile dans des scénarios complexes où des erreurs peuvent survenir à différentes étapes de la transaction, et vous souhaitez gérer ces erreurs de manière sélective.
 
 
 
