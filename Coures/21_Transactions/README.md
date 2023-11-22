@@ -31,7 +31,25 @@
         ROLLBACK;
         ```
 
+## RQ : `autocommit :`
 
+- **`autocommit`** est une propriété qui détermine si chaque instruction SQL individuelle est automatiquement validée (commit) après son exécution ou si elle doit être explicitement validée par le programme ou l'utilisateur.
+
+- Lorsque l'`autocommit` est activé, chaque instruction SQL, telle qu'une insertion (`INSERT`), une mise à jour (`UPDATE`), ou une suppression (`DELETE`), est automatiquement validée et les changements sont permanents dans la base de données. 
+
+- Lorsque l'`autocommit` est désactivé, les instructions SQL ne sont pas automatiquement validées après leur exécution. Cela signifie que plusieurs instructions peuvent être regroupées au sein d'une transaction, et ces changements ne deviendront permanents que si une instruction `COMMIT` est explicitement exécutée. Si une erreur survient au cours de la transaction, vous pouvez exécuter une instruction `ROLLBACK` pour annuler les changements effectués depuis le dernier `COMMIT`.
+
+- comment vous pouvez activer ou désactiver l'`autocommit` :
+
+- **Activer l'autocommit :**
+  ```sql
+  SET autocommit = 1; -- ou SET autocommit = ON;
+  ```
+
+- **Désactiver l'autocommit :**
+  ```sql
+  SET autocommit = 0; -- ou SET autocommit = OFF;
+  ```
 
 
 ## 2. Les Régles ``ACID``:
